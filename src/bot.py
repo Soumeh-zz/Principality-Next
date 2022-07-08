@@ -18,7 +18,7 @@ class Principality(Bot, Configurable):
 
     class Config:
         token: str = Option('', "Your bot's Discord token")
-        cog_folder: str = Option('dev_cogs', "What directory to load modules from")
+        cog_folder: str = Option('cogs', "What directory to load modules from")
         cog_databases: bool = Option(True, "Whether or not every cog should generate a database for itself (accessible using `self.db`)")
         default_database_type: Literal['local', 'temp', 'deta'] = Option('local', "What database type to use for cogs (Options: local, temp or deta)")
 
@@ -29,8 +29,7 @@ class Principality(Bot, Configurable):
         run(self.__async__())
     
     async def __async__(self):
-        cogs = get_cogs(Path(self.config['cog_folder']))
-        print(cogs)
+        cogs = get_cogs(Path(self.config.cog_folder))
         for cog in cogs:
             cog = cog()
             if self.config.cog_databases:
