@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from importlib import import_module
 from inspect import getmembers, isclass
 from json import loads
