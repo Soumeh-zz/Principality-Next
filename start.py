@@ -1,5 +1,4 @@
 from argparse import ArgumentParser
-from os import getenv
 
 if __name__ == '__main__':
     parser = ArgumentParser(description='Startup the bot.')
@@ -7,10 +6,10 @@ if __name__ == '__main__':
     dev_mode = parser.parse_args().dev
 
     if dev_mode:
-        from src.dev_bot import PrincipalityDev
+        from principality import PrincipalityDev
         client = PrincipalityDev()
     else:
-        from src.bot import Principality
+        from principality import Principality
         client = Principality()
 
     token = client.config.token
