@@ -4,7 +4,7 @@ Cogs are...
 
 ### Example Directory
 
-```
+```css
 example/
 ├── src/
 │   └── example.py
