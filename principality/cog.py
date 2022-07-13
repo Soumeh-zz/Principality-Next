@@ -1,10 +1,16 @@
 from pathlib import Path
-from inspect import getfile
 
 import nextcord
-from nextcord.ext.commands import Cog
+from nextcord.ext.commands import Cog as DiscordCog
 from tomlkit import load, table
 from pyfigure import Configurable, Option
+
+# Util Functions
+
+async def reply(ctx, message):
+    await ctx.response.send_message(embed=nextcord.Embed(description=message))
+
+# Classes
 
 class ConfigOption(Option):
     pass
@@ -12,7 +18,7 @@ class ConfigOption(Option):
 class SlashOption(nextcord.SlashOption):
     pass
 
-class Cog(Cog, Configurable):
+class Cog(DiscordCog, Configurable):
 
     config_directory = Path('configs')
     slash_command = nextcord.slash_command
