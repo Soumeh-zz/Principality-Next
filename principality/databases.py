@@ -121,13 +121,12 @@ class Local(Database, Configurable):
     config_file = Path('configs/Bot.toml')
     
     class Config:
-        class database:
-            directory: str = Option('data/', description='Which directory to store database data in')
+        database_directory: str = Option('data/', description='What directory to store database data in')
 
     def __init__(self, name):
         Configurable.__init__(self)
 
-        data_dir = Path(self.config['database'].directory)
+        data_dir = Path(self.config.database_directory)
         if not data_dir.exists(): data_dir.mkdir()
 
         self.directory = data_dir/name
