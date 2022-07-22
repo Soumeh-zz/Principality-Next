@@ -1,6 +1,7 @@
 from pathlib import Path
 from json import dump, load
 from typing import List, Any
+from os import getenv
 
 from pyfigure import Configurable, Option
 
@@ -72,6 +73,7 @@ class Deta(Database, Configurable):
 
     class Config:
         class database:
+            deta_token_env_var: str = Option('DETA_TOKEN', "The environmental variable of your bot's token. (Leave as default unless you want to work with multiple bots)")
             deta_token: str = Option('', description='In case you are using a Deta Base, provide your API key here')
 
     def __init__(self, name):
@@ -81,7 +83,7 @@ class Deta(Database, Configurable):
         token = self.config['database'].get('deta_token', None)
         if not token:
             raise AttributeError('You must provide a Deta API key in the bot configuration file if you want to use Deta Bases')
-        deta = Deta(token)
+        deta = Deta(getenv(self.config.deta_token_env_var))
         self.base = deta.Base(name)
         self.drive = deta.Drive(name)
     

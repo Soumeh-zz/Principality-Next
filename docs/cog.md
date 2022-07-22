@@ -1,15 +1,18 @@
 # Cogs
 
-Cogs are...
+Cogs are modules for Principality, and can 
+
+By default, cogs are loaded from the `cogs/` directory, but this can be changed in the config.
 
 ### Example Directory
 
 ```css
-example/
-├── src/
-│   └── example.py
-├── pyproject.toml
-└── readme.md (optional)
+cogs/
+└── example/
+    ├── src/
+    │   └── example.py
+    ├── pyproject.toml
+    └── readme.md (optional)
 ```
 
 > You can download an example module [here](https://downgit.github.io/#/home?url=https://github.com/Soumeh/Principality-Next-Cogs/tree/master/example).
@@ -21,7 +24,7 @@ Each file has specific usages, which are described here:
 
 # pyproject.toml
 
-A [PEP 621](https://peps.python.org/pep-0621/) compatible project file, required to store your project's metadata, such as the display name, description, or version.
+A [PEP 621](https://peps.python.org/pep-0621/) compatible project file, required to store the cog's metadata, such as the display name, description, or version.
 
 ### Example File
 
@@ -56,11 +59,18 @@ class Example(Cog):
 > It's recommended to only have one cog class per cog, but if you have multiple classes, they'll all share the same metadata and configuration file.
 
 To give the cog functionality, you can use these objects:
-- [Configuration](#configuration)
-- [Loaded Method](#loaded-method)
-- [Ready Method](#ready-method)
-- [Listeners](#listeners)
-- [Commands](#commands)
+- [Cogs](#cogs)
+    - [Example Directory](#example-directory)
+- [pyproject.toml](#pyprojecttoml)
+    - [Example File](#example-file)
+- [readme.md](#readmemd)
+- [example.py](#examplepy)
+  - [Configuration](#configuration)
+  - [Loaded Method](#loaded-method)
+  - [Ready Method](#ready-method)
+  - [Listeners](#listeners)
+  - [Commands](#commands)
+    - [Example File](#example-file-1)
 
 ## Configuration
 

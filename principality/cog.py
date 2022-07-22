@@ -1,4 +1,5 @@
 from pathlib import Path
+from superdict import SuperDict
 
 import nextcord
 from nextcord.ext.commands import Cog as DiscordCog
@@ -37,14 +38,9 @@ class Cog(DiscordCog, Configurable):
         toml_file = self.directory.parent / 'pyproject.toml'
         if toml_file.exists() and toml_file.is_file():
             with open(toml_file, 'r') as file:
-                toml = load(file)
+                self.metadata = SuperDict(load(file)['project'])
         else:
-            toml = table()
-        self.metadata = table()
-        for _, data in toml.items():
-            for key, value in data.items():
-                self.metadata[key] = value
-                setattr(self.metadata, key, value)
+            self.metadata = SuperDict()
 
 from importlib.util import spec_from_file_location, module_from_spec
 from inspect import isclass, getmembers

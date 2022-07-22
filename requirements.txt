@@ -1,2 +1,2 @@
-nextcord
-pyfigure
+git+https://github.com/Soumeh/Principality-Next/principality
+git+https://github.com/Soumeh/Principality-Next/cherub

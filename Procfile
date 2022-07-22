@@ -1,1 +1,1 @@
-worker: python start.py
+worker: python -m principality

@@ -1,0 +1,16 @@
+[project]
+name = "principality-next"
+version = "1.1"
+description = "Modular Discord Bot Framework"
+
+dependencies = [
+    "nextcord",
+    "pyfigure",
+    "typer @ git+https://github.com/Soumeh/typer"
+]
+
+[tool.setuptools]
+packages = [
+    'principality',
+    'cherub'
+]
