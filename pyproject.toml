@@ -13,5 +13,6 @@ dependencies = [
 [tool.setuptools]
 packages = [
     'principality',
+    'principality.ext',
     'cherub'
 ]
