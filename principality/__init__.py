@@ -18,7 +18,7 @@ class Principality(Bot, Configurable):
         return get_db(self.config.default_database_type, name)
 
     class Config:
-        token_env_vear: str = Option('TOKEN', "The environmental variable of your bot's token. (Leave as default unless you want to work with multiple bots)")
+        token_env_var: str = Option('TOKEN', "The environmental variable of your bot's token. (Leave as default unless you want to work with multiple bots)")
         cog_folder: str = Option('cogs', "What directory to load modules from")
         cog_databases: bool = Option(True, "Whether or not every cog should generate a database for itself (accessible using `self.db`)")
         default_database_type: Literal['local', 'temp', 'deta'] = Option('local', "What database type to use for cogs (Options: local, temp or deta)")
@@ -31,7 +31,7 @@ class Principality(Bot, Configurable):
     
     async def __async__(self):
         cogs = get_cogs(Path(self.config.cog_folder))
-        for cog in cogs:
+        for cog in cogs.values():
             cog = cog()
             if self.config.cog_databases:
                 cog.db = self.new_db(cog.name)

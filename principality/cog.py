@@ -3,15 +3,11 @@ from superdict import SuperDict
 
 import nextcord
 from nextcord.ext.commands import Cog as DiscordCog
-from tomlkit import load, table
+from tomlkit import load
 from pyfigure import Configurable, Option
-
-# Util Functions
-
-async def reply(ctx, message):
-    await ctx.response.send_message(embed=nextcord.Embed(description=message))
-
-# Classes
+from importlib.util import spec_from_file_location, module_from_spec
+from inspect import isclass, getmembers
+from typing import List
 
 class ConfigOption(Option):
     pass
@@ -26,6 +22,15 @@ class Cog(DiscordCog, Configurable):
     user_command = nextcord.user_command
     message_command = nextcord.message_command
     command = nextcord.ext.commands.command
+
+    @classmethod
+    def from_dir(self, path: Path):
+        spec = spec_from_file_location(path.stem, path/'src'/(str(path.stem)+'.py'))
+        module = module_from_spec(spec)
+        spec.loader.exec_module(module)
+        cog = _cogs_from_module(module)[0]
+        cog.directory = path/'src/'
+        return cog
 
     def __init__(self):
 
@@ -42,30 +47,16 @@ class Cog(DiscordCog, Configurable):
         else:
             self.metadata = SuperDict()
 
-from importlib.util import spec_from_file_location, module_from_spec
-from inspect import isclass, getmembers
-from typing import List
-
 def get_cogs(path: Path) -> List[Cog]:
-    cogs = []
-    for dir in _cog_dirs_from_dir(path):
-        dir = dir.parent
-        module = _cog_modules_from_dir(dir)
-        for cog in _cogs_from_module(module, dir):
-            cogs.append(cog)
+    cogs = {}
+    for dir in path.rglob('*/pyproject.toml'):
+        cog = Cog.from_dir(dir.parent)
+        cogs[dir.parent.stem] = cog
     return cogs
 
-def _cog_dirs_from_dir(path: Path):
-    return path.rglob('*/pyproject.toml')
-
-def _cog_modules_from_dir(path: Path):
-    spec = spec_from_file_location(path.stem, path/'src'/(str(path.stem)+'.py'))
-    module = module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-def _cogs_from_module(module, path: Path):
+def _cogs_from_module(module):
+    cogs = []
     for cog in [c[1] for c in getmembers(module, isclass)]:
         if issubclass(cog, Cog) and cog != Cog:
-            cog.directory = path/'src/'
-            yield cog
+            cogs.append(cog)
+    return cogs

@@ -1,5 +1,5 @@
 from pytest import mark
-from databases import Deta, Local, Temp
+from principality.databases import Deta, Local, Temp
 
 dbs = [Deta('test'), Local('test'), Temp('test')]
 

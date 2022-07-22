@@ -1,2 +1,2 @@
-git+https://github.com/Soumeh/Principality-Next/principality
-git+https://github.com/Soumeh/Principality-Next/cherub
+git+https://github.com/Soumeh/Principality-Next
+-r cog_requirements.txt

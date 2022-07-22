@@ -1,6 +1,5 @@
 from nextcord import ChannelType, Embed, MessageType, Message
-from json import loads
-from urllib.request import urlopen
+from requests import get
 
 def message_as_embed(message: Message) -> Embed:
     embed_message = message.content
@@ -28,6 +27,6 @@ def message_as_embed(message: Message) -> Embed:
         return embeds
     return embed
 
-def url_to_json(url):
-    with urlopen(url) as url:
-        return loads(url.read().decode())
+def url_to_json(url, headers: dict = {}):
+    resp = get(url, headers=headers)
+    return resp.json()

@@ -2,8 +2,12 @@ from pathlib import Path
 from json import dump, load
 from typing import List, Any
 from os import getenv
+from dotenv import load_dotenv
+from superdict import SuperDict
 
 from pyfigure import Configurable, Option
+
+load_dotenv()
 
 class Database():
 
@@ -72,18 +76,17 @@ class Deta(Database, Configurable):
     config_file = Path('configs/Bot.toml')
 
     class Config:
-        class database:
-            deta_token_env_var: str = Option('DETA_TOKEN', "The environmental variable of your bot's token. (Leave as default unless you want to work with multiple bots)")
-            deta_token: str = Option('', description='In case you are using a Deta Base, provide your API key here')
+        deta_token_env_var: str = Option('DETA_TOKEN', "The environmental variable of your bot's token. (Leave as default unless you want to work with multiple bots)")
+        deta_token: str = Option('', description='In case you are using a Deta Base, provide your API key here')
 
     def __init__(self, name):
         Configurable.__init__(self)
         from deta import Deta
 
-        token = self.config['database'].get('deta_token', None)
+        token = getenv(self.config.deta_token_env_var, None)
         if not token:
             raise AttributeError('You must provide a Deta API key in the bot configuration file if you want to use Deta Bases')
-        deta = Deta(getenv(self.config.deta_token_env_var))
+        deta = Deta(token)
         self.base = deta.Base(name)
         self.drive = deta.Drive(name)
     
@@ -116,12 +119,12 @@ class Deta(Database, Configurable):
     def __delitem__(self, key):
         self.base.delete(key)
 
-class Local(Database, Configurable):
+class Local(Database, dict, Configurable):
 
-    config_file = Path('configs/Bot.toml')
+    config_file = Path('configs/Database.toml')
     
     class Config:
-        database_directory: str = Option('data/', description='What directory to store database data in')
+        database_directory: str = Option('data/', 'What directory to store database data in')
 
     def __init__(self, name):
         Configurable.__init__(self)
@@ -133,6 +136,9 @@ class Local(Database, Configurable):
         if not self.directory.exists(): self.directory.mkdir()
 
         self.file = data_dir/f'{name}.json'
+        if not self.file.exists():
+            with open(self.file, 'w') as file:
+                file.write('{}')
 
         self._load_from_file()
 
@@ -152,32 +158,14 @@ class Local(Database, Configurable):
 
     def delete(self, path):
         (self.directory/path).unlink(True)
-
-    def __setitem__(self, key, value):
-        self.json[key] = value
-        self._save_to_file()
-    
-    def __contains__(self, key):
-        return key in self.json
-
-    def __getitem__(self, key):
-        return self.json.get(key, None) 
-
-    def __delitem__(self, key):
-        try:
-            del self.json[key]
-            self._save_to_file()
-        except:
-            pass
     
     def _load_from_file(self):
-        if not self.file.exists(): self.file.write_text('{}')
         with open(self.file, 'r') as file:
-            self.json = load(file) or {}
+            self.__json__ = load(file) or {}
 
-    def _save_to_file(self):
+    def save_json(self):
         with open(self.file, 'w+') as file:
-            dump(self.json, file, separators=(',', ':'))
+            dump(self.__json__, file, separators=(',', ':'))
 
 class Temp(dict, Database):
     
