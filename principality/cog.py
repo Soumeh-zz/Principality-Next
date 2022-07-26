@@ -9,6 +9,8 @@ from importlib.util import spec_from_file_location, module_from_spec
 from inspect import isclass, getmembers
 from typing import List
 
+from principality.databases import Database, get_db
+
 class ConfigOption(Option):
     pass
 
@@ -32,7 +34,7 @@ class Cog(DiscordCog, Configurable):
         cog.directory = path/'src/'
         return cog
 
-    def __init__(self):
+    def __init__(self, database: Database = None):
 
         self.name = self.__class__.__name__
         self.config_file = self.config_directory / (self.name+'.toml')
@@ -46,6 +48,11 @@ class Cog(DiscordCog, Configurable):
                 self.metadata = SuperDict(load(file)['project'])
         else:
             self.metadata = SuperDict()
+        
+        # gen database
+        if database:
+            self.db = get_db(database, self.name)
+
 
 def get_cogs(path: Path) -> List[Cog]:
     cogs = {}
