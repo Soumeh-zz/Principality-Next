@@ -2,7 +2,7 @@ from typer import Typer
 from os import getenv
 from dotenv import load_dotenv
 
-app = Typer()
+app = Typer(pretty_exceptions_show_locals=False, pretty_exceptions_short=True)
 load_dotenv()
 
 @app.command()
@@ -19,6 +19,7 @@ def start(dev_mode: bool = False):
     if not token:
         print("A Discord bot token must be provided in an environmental variable in order to start.")
     else:
+        client.load()
         client.run(token)
 
 @app.command()

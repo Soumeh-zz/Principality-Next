@@ -3,7 +3,7 @@ from typer import Typer
 from typing import List, Union
 
 cherub = Cherub()
-app = Typer(short_help=True, pretty_exceptions_show_locals=False)
+app = Typer(pretty_exceptions_show_locals=False, pretty_exceptions_short=True)
 
 @app.command()
 def install(cogs: List[str]):
