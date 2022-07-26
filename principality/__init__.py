@@ -7,15 +7,11 @@ from pyfigure import Configurable, Option
 from nextcord.ext import tasks
 
 from principality.cog import Cog, get_cogs
-from principality.databases import Database, get_db
 from principality.overseer import Overseer
 
 class Principality(Bot, Configurable):
 
     config_file = 'configs/Bot.toml'
-
-    def new_db(self, name: str) -> Database:
-        return get_db(self.config.default_database_type, name)
 
     class Config:
         token_env_var: str = Option('TOKEN', "The environmental variable of your bot's token. (Leave as default unless you want to work with multiple bots)")
@@ -23,20 +19,18 @@ class Principality(Bot, Configurable):
         cog_databases: bool = Option(True, "Whether or not every cog should generate a database for itself (accessible using `self.db`)")
         default_database_type: Literal['local', 'temp', 'deta'] = Option('local', "What database type to use for cogs (Options: local, temp or deta)")
 
-    def __init__(self):
-        Bot.__init__(self, intents=Intents.all(), allowed_mentions=AllowedMentions(everyone=False, replied_user=False))
+    def __init__(self, *args):
+        Bot.__init__(self, rollout_all_guilds=True, intents=Intents.all(), allowed_mentions=AllowedMentions(everyone=False, replied_user=False), *args)
         Configurable.__init__(self)
 
-        run(self.__async__())
-    
-    async def __async__(self):
+    def load(self):
         cogs = get_cogs(Path(self.config.cog_folder))
         for cog in cogs.values():
-            cog = cog()
-            if self.config.cog_databases:
-                cog.db = self.new_db(cog.name)
-            await self.load_cog(cog)
-        print('Loaded Modules: \n' + '\n'.join(self.cogs.keys()))
+            db = None
+            if self.config.cog_databases: db = self.config.default_database_type
+            cog = cog(db)
+            self.load_cog(cog)
+        print('Loaded Cogs: \n' + '\n'.join(self.cogs.keys()))
 
     async def on_ready(self):
         for name, cog in self.cogs.items():
@@ -48,7 +42,7 @@ class Principality(Bot, Configurable):
                 exception_line = error.__traceback__.tb_lineno
                 print(f"Error in cog '{name}' on line {exception_line}: [{exception_type}] {exception_message}")
 
-    async def load_cog(self, cog: Cog):
+    def load_cog(self, cog: Cog):
         cog.bot = self
         self.add_cog(cog, override=True)
         if hasattr(cog, 'load'): cog.load()
