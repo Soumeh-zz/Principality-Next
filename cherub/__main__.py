@@ -3,13 +3,12 @@ from typer import Typer
 from typing import List, Union
 
 cherub = Cherub()
-app = Typer()
+app = Typer(short_help=True, pretty_exceptions_show_locals=False)
 
 @app.command()
 def install(cogs: List[str]):
     for cog in cogs:
         cherub.install(cog)
-    cherub.save_requirements()
 
 @app.command()
 def update(cogs: List[str]):
@@ -19,11 +18,11 @@ def update(cogs: List[str]):
     else:
         for cog in cogs:
             cherub.update(cog)
-    cherub.save_requirements()
 
 @app.command()
-def delete(cog: str, delete_data: bool = True, delete_config: bool = False):
-    cherub.delete(cog, delete_data, delete_config)
+def remove(cogs: List[str], delete_data: bool = True, delete_config: bool = False):
+    for cog in cogs:
+        cherub.delete(cog, delete_data, delete_config)
 
 @app.command()
 def populate():
@@ -35,14 +34,17 @@ def list():
 
 @list.command()
 def installed():
-    print('Installed Modules:')
-    print('\n'.join(cherub.installed_cogs()))
+    #cherub.populate()
+    cogs = [c['name'] for c in cherub.cogs.values()]
+    print('Installed Cogs:')
+    print('\n'.join(cogs))
 
 @list.command()
 def available():
-    cherub._cog_exists()
-    print('Available Modules:')
-    print('\n'.join(cherub.cherub.available))
+    cherub._cog_exists('')
+    print('Available Cogs:')
+    available = [a for a in cherub.available_cogs if a not in cherub.cogs]
+    print('\n'.join(available) or "None :(")
 
 if __name__ == '__main__':
     app()
