@@ -8,8 +8,8 @@ app = Typer(pretty_exceptions_show_locals=False, pretty_exceptions_short=True)
 @app.command()
 def install(cogs: List[str]):
     for cog in cogs:
-        cherub.install(cog)
-        print(f"Installed cog '{cog}'")
+        done = cherub.install(cog)
+        if done: print(f"Installed cog '{cog}'")
 
 @app.command()
 def update(cogs: List[str]):

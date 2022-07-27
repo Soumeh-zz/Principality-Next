@@ -82,7 +82,7 @@ class Cherub(Configurable):
 
     class Config:
         module_repo_url: str = Option('https://api.github.com/repos/Soumeh/Principality-Next-Modules/')
-        cog_folder: str = Option('cogs', "What directory to load modules from")
+        cog_directory: str = Option('cogs', "What directory to load modules from")
 
     def __init__(self):
 
@@ -90,8 +90,8 @@ class Cherub(Configurable):
         Configurable.__init__(self)
         Principality()
 
-        self.cog_folder = Path(self.config.cog_folder)
-        if not self.cog_folder.exists(): self.cog_folder.mkdir()
+        self.cog_directory = Path(self.config.cog_directory)
+        if not self.cog_directory.exists(): self.cog_directory.mkdir()
 
         if 'cogs' not in self.db.data:
             self.db.data['cogs'] = {}
@@ -111,8 +111,8 @@ class Cherub(Configurable):
         else:
             self.github_headers = {}
 
-        self.cog_folder = Path(self.config.cog_folder)
-        if not self.cog_folder.exists(): self.cog_folder.mkdir()
+        self.cog_directory = Path(self.config.cog_directory)
+        if not self.cog_directory.exists(): self.cog_directory.mkdir()
         #self.populate()
 
     def _save(self):
@@ -130,7 +130,7 @@ class Cherub(Configurable):
         return cog in self.available_cogs
 
     def populate(self):
-        for id, cog in get_cogs(self.cog_folder).items():
+        for id, cog in get_cogs(self.cog_directory).items():
             if id in self.cogs: return
             cog = cog()
             self.cogs[id] = {
@@ -148,7 +148,9 @@ class Cherub(Configurable):
                 for dep in cog.metadata['dependencies']:
                     if '@ ' in dep: dep = dep.rsplit('@ ', 1)[1]
                     self.dependencies.append(dep)
+
         self._save()
+        return True
 
     def install(self, cog: str):
         cog = cog.lower()
@@ -156,8 +158,8 @@ class Cherub(Configurable):
         if not self._cog_exists(cog): return print(f"Cog '{cog}' does not exist")
 
         cog_url = self.config.module_repo_url + 'contents/cogs/' + cog
-        cog_folder = self.cog_folder / cog
-        prepared_cog = GithubCog(cog_url, cog_folder, self.github_headers)
+        cog_directory = self.cog_directory / cog
+        prepared_cog = GithubCog(cog_url, cog_directory, self.github_headers)
         installed_cog = prepared_cog.install()
 
         self.cogs[cog] = {
@@ -172,6 +174,7 @@ class Cherub(Configurable):
             [self.dependencies.append(i.after('@ ')) for i in installed_cog.metadata['dependencies']]
 
         self._save()
+        return True
 
     def update(self: None, cog: str):
         cog = cog.lower()
@@ -179,8 +182,8 @@ class Cherub(Configurable):
         if not self._cog_exists(cog): return print(f"Cog '{cog}' does not exist")
 
         cog_url = self.config.module_repo_url + 'contents/' + cog
-        cog_folder = self.cog_folder / cog
-        prepared_cog = GithubCog(cog_url, cog_folder, self.github_headers)
+        cog_directory = self.cog_directory / cog
+        prepared_cog = GithubCog(cog_url, cog_directory, self.github_headers)
         if self.cogs[cog.lower()]['version'] == prepared_cog.metadata.version:
             return print(f"Cog '{cog}' is up to date")
         installed_cog = prepared_cog.install()
@@ -197,6 +200,7 @@ class Cherub(Configurable):
             [self.dependencies.append(i.after('@ ')) for i in prepared_cog.metadata['dependencies']]
 
         self._save()
+        return True
 
     def delete(self, cog: str, delete_data: bool = True, delete_config: bool = False):
         cog = cog.lower()
@@ -212,3 +216,4 @@ class Cherub(Configurable):
 
         del self.cogs[cog]
         self._save()
+        return True
