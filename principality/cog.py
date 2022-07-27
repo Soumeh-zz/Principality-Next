@@ -19,7 +19,8 @@ class SlashOption(nextcord.SlashOption):
 
 class Cog(DiscordCog, Configurable):
 
-    config_directory = Path('configs')
+    config_directory = Path('configs/')
+
     slash_command = nextcord.slash_command
     user_command = nextcord.user_command
     message_command = nextcord.message_command
@@ -36,19 +37,18 @@ class Cog(DiscordCog, Configurable):
 
     def __init__(self, database: Database = None):
 
-        self.name = self.__class__.__name__
-        self.config_file = self.config_directory / (self.name+'.toml')
+        # read metadata
+        project_file = self.directory.parent / 'pyproject.toml'
+        with open(project_file, 'r') as file:
+            self.metadata = SuperDict(load(file)['project'])
+
+        # setup data
+        self.name = self.metadata.name
+        self.id = self.directory.parent.stem
+        self.config_file = self.config_directory / (self.id+'.toml')
 
         Configurable.__init__(self)
 
-        # read metadata
-        toml_file = self.directory.parent / 'pyproject.toml'
-        if toml_file.exists() and toml_file.is_file():
-            with open(toml_file, 'r') as file:
-                self.metadata = SuperDict(load(file)['project'])
-        else:
-            self.metadata = SuperDict()
-        
         # gen database
         if database:
             self.db = get_db(database, self.name)
