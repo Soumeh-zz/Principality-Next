@@ -9,3 +9,4 @@ build/
 dev_cogs/
 data/
 configs/
+cog_requirements.txt
