@@ -28,7 +28,11 @@ class Ratelimit(Exception):
 class CogNotFound(Exception):
     pass
 
-def _github_download(url: str, headers: dict = {}):
+def is_true(val):
+    if val.lower() in ('y', 'yes', 't', 'true', 'on', '1'):
+        return True
+
+def github_download(url: str, headers: dict = {}):
     result = url_to_json(url, headers)
     if 'documentation_url' in result:
         raise Ratelimit("You are being rate limited by Github, if you haven't provided a github token, please wait and try again")
@@ -47,7 +51,7 @@ class GithubCog():
         return cog()
 
     def _get_files(self, url: str, path: Path, container: list):
-        files = _github_download(url=url, headers=self.github_headers)
+        files = github_download(url=url, headers=self.github_headers)
         self.file_data = []
         for data in files:
             if data['type'] == 'dir':
@@ -89,19 +93,18 @@ class Cherub(Configurable):
         self.cog_folder = Path(self.config.cog_folder)
         if not self.cog_folder.exists(): self.cog_folder.mkdir()
 
-        populate = False
         if 'cogs' not in self.db.data:
             self.db.data['cogs'] = {}
             populate = True
         if 'dependencies' not in self.db.data:
             with open('cog_requirements.txt') as file:
                 self.db.data['dependencies'] = [i for i in file.read().split('\n') if i]
-        self.dependencies = self.db.data['dependencies']
-        self.cogs = self.db.data['cogs']
-
-        if populate:
+        if 'cogs' not in self.db.data:
+            self.db.data['cogs'] = {}
             self.populate()
             self.db.data.dump()
+        self.dependencies = self.db.data['dependencies']
+        self.cogs = self.db.data['cogs']
 
         if getenv('GITHUB_TOKEN', None): 
             self.github_headers = {"Authorization": f"token {getenv('GITHUB_TOKEN')}"}
@@ -119,17 +122,10 @@ class Cherub(Configurable):
 
     def _cog_installed(self, cog: str):
         return cog in self.cogs
-    
-    def _github_download(self, url: str, headers: dict = {}):
-        print(url)
-        result = url_to_json(url, headers)
-        if 'documentation_url' in result:
-            raise Ratelimit("You are being rate limited by Github, if you haven't provided a github token, please wait and try again")
-        return result
 
     def _cog_exists(self, cog: str):
         if not hasattr(self, 'available_cogs'):
-            data = _github_download(self.config.module_repo_url+'contents/cogs/', self.github_headers)
+            data = github_download(self.config.module_repo_url+'contents/cogs/', self.github_headers)
             self.available_cogs = [i['name'] for i in data if i['type'] == 'dir']
         return cog in self.available_cogs
 
@@ -153,7 +149,6 @@ class Cherub(Configurable):
                     if '@ ' in dep: dep = dep.rsplit('@ ', 1)[1]
                     self.dependencies.append(dep)
         self._save()
-        print(f"Populated cogs")
 
     def install(self, cog: str):
         cog = cog.lower()
@@ -177,7 +172,6 @@ class Cherub(Configurable):
             [self.dependencies.append(i.after('@ ')) for i in installed_cog.metadata['dependencies']]
 
         self._save()
-        print(f"Installed cog '{cog}'")
 
     def update(self: None, cog: str):
         cog = cog.lower()
@@ -203,7 +197,6 @@ class Cherub(Configurable):
             [self.dependencies.append(i.after('@ ')) for i in prepared_cog.metadata['dependencies']]
 
         self._save()
-        print(f"Updated cog '{cog}'")
 
     def delete(self, cog: str, delete_data: bool = True, delete_config: bool = False):
         cog = cog.lower()
@@ -219,8 +212,3 @@ class Cherub(Configurable):
 
         del self.cogs[cog]
         self._save()
-        print(f"Deleted cog '{cog}'")
-
-def is_true(val):
-    if val.lower() in ('y', 'yes', 't', 'true', 'on', '1'):
-        return True

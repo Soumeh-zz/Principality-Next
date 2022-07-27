@@ -9,24 +9,29 @@ app = Typer(pretty_exceptions_show_locals=False, pretty_exceptions_short=True)
 def install(cogs: List[str]):
     for cog in cogs:
         cherub.install(cog)
+        print(f"Installed cog '{cog}'")
 
 @app.command()
 def update(cogs: List[str]):
     if cogs[0].lower() == 'all':
         for cog in cherub.db['cogs'].keys():
             cherub.update(cog)
+            print(f"Updated cog '{cog}'")
     else:
         for cog in cogs:
             cherub.update(cog)
+            print(f"Updated cog '{cog}'")
 
 @app.command()
-def remove(cogs: List[str], delete_data: bool = True, delete_config: bool = False):
+def delete(cogs: List[str], delete_data: bool = True, delete_config: bool = False):
     for cog in cogs:
         cherub.delete(cog, delete_data, delete_config)
+        print(f"Deleted cog '{cog}'")
 
 @app.command()
 def populate():
     cherub.populate()
+    print(f"Populated cogs")
 
 @app.command_group()
 def list():
