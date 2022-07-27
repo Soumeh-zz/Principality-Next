@@ -14,7 +14,7 @@ def install(cogs: List[str]):
 @app.command()
 def update(cogs: List[str]):
     if cogs[0].lower() == 'all':
-        for cog in cherub.db['cogs'].keys():
+        for cog in cherub.cogs.keys():
             cherub.update(cog)
             print(f"Updated cog '{cog}'")
     else:
