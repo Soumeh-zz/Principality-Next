@@ -10,3 +10,4 @@ dev_cogs/
 data/
 configs/
 cog_requirements.txt
+cherub/argument_parser.py
