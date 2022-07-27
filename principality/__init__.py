@@ -149,4 +149,4 @@ class PrincipalityDev(Principality):
             return self._find_cog(path.parent)
         if len(files) > 1:
             return None
-        return files[0].parent.stem
+        return files[0].parent
