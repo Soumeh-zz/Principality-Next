@@ -82,7 +82,7 @@ class Cherub(Configurable):
 
     class Config:
         module_repo_url: str = Option('https://api.github.com/repos/Soumeh/Principality-Next-Modules/')
-        cog_directory: str = Option('cogs', "What directory to load modules from")
+        cog_directory: str = Option('cogs/', "What directory to load modules from")
 
     def __init__(self):
 
@@ -131,7 +131,7 @@ class Cherub(Configurable):
 
     def populate(self):
         for id, cog in get_cogs(self.cog_directory).items():
-            if id in self.cogs: return
+            if id in self.cogs: continue
             cog = cog()
             self.cogs[id] = {
                 'name': str(cog.name),
