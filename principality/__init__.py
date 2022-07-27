@@ -135,7 +135,7 @@ class PrincipalityDev(Principality):
             return None
         if not cog_dir:
             cog_dir = self._find_cog(path)
-            if not cog_id:
+            if not cog_dir:
                 return None
 
         self.found_cogs[path] = cog_dir
