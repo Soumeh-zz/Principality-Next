@@ -1,6 +1,6 @@
 [project]
 name = "principality-next"
-version = "2.2.0"
+version = "2.2.1"
 description = "Modular Discord Bot Framework"
 
 dependencies = [
