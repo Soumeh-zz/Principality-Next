@@ -45,6 +45,7 @@ class Cog(DiscordCog, Configurable):
         # setup data
         self.name = self.metadata.name
         self.id = self.directory.parent.stem
+        self.__cog_name__ = self.id
         self.config_file = self.config_directory / (self.id+'.toml')
 
         Configurable.__init__(self)

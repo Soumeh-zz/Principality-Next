@@ -66,8 +66,15 @@ class Principality(Bot, Configurable):
             exception_line = error.__traceback__.tb_lineno
             print(f"Error while readying cog '{cog.name}' on line {exception_line}: [{exception_type}] {exception_message}")
 
-    def unload_cog(self, cog_name: str):
-        self.remove_cog(cog_name)
+    async def unload_cog(self, cog: Cog):
+        self.remove_cog(cog.id)
+        return True
+    
+    async def reload_cog(self, cog: Cog):
+        await self.unload_cog(cog)
+        # reload module
+        self.load_cog(cog)
+        await self.async_load_cog(cog)
         return True
 
 
@@ -79,15 +86,15 @@ class PrincipalityDev(Principality):
     async def on_ready(self):
         await super().on_ready()
         self.config_overseer = Overseer(self.config_directory, '*.toml')
-        self.cog_overseer = Overseer(Path(self.config.cog_directory), ['**/*.py', '**/*.json'])
+        self.cog_overseer = Overseer(Path(self.config.cog_directory), ['*.py', '*.toml', '*.json'])
         await self.update_checker.start()
 
     @tasks.loop(seconds=5)
     async def update_checker(self):
 
         # check configs
-        changed, _, removed = self.config_overseer.changes()
-        for file in changed.union(removed):
+        changed, _, _ = self.config_overseer.changes()
+        for file in changed:
             cog_id = file.stem
             cog = self.cogs.get(cog_id, None)
             if not cog:
@@ -97,46 +104,61 @@ class PrincipalityDev(Principality):
             print(f"Reloaded config for cog '{cog_id}'")
 
         # check cogs
-        self.initialized_cogs = []
+        self.processed_cogs = []
         changed, added, removed = self.cog_overseer.changes()
-        functions = {'added': added, 'changed': changed, 'removed': removed} # layout determines priority
-        for function, list in functions.items():
-            for file in list:
-                # find cog id and cache it
-                cog_dir = await self.find_cog(file)
-                if not cog_dir:
-                    print(f"Couldn't find what cog file '{file}' belongs to")
-                    continue
-                if cog_dir in self.initialized_cogs:
-                    continue
 
-                cog = Cog.from_dir(cog_dir)
-                self.found_cogs[path] = cog
+        for file in removed:
+            if file.name != 'pyproject.toml':
+                continue
+            cog = self.cogs[file.parent.stem]
+            await self.unload_cog(cog)
+            await self.sync_application_commands()
+            print(f"Removed cog '{cog.name}'")
+            removed = {r for r in removed if not r.is_relative_to(file.parent)}
 
-                if function == 'removed':
-                    self.unload_cog(cog_dir.stem)
-                    continuev
+        for file in added:
+            if file.name != 'pyproject.toml':
+                continue
+            cog = Cog.from_dir(file.parent)
+            cog = cog()
+            cog.bot = self
+            self.add_cog(cog)
+            self.load_cog(cog)
+            await self.async_load_cog(cog)
+            await self.sync_application_commands()
+            print(f"Added cog '{cog.name}'")
+            added = {a for a in added if not a.is_relative_to(file.parent)}
 
-                cog = cog()
+        files = changed.union(added).union(removed)
+        for file in files:
+            # find cog id and cache it
+            cog_dir = await self.find_cog(file)
+            if not cog_dir:
+                print(f"Couldn't find what cog file '{file}' belongs to")
+                continue
 
-                if function == 'added':
-                    cog.bot = self
-                    self.add_cog(cog)
+            cog = Cog.from_dir(cog_dir)
 
-                cog = cog()
-                self.load_cog(cog)
-                await self.async_load_cog(cog)
+            if cog in self.processed_cogs:
+                continue
 
-                self.initialized_cogs.append(cog_dir)
+            cog = cog()
+            self.load_cog(cog)
+            await self.async_load_cog(cog)
+            await self.sync_application_commands()
+
+            self.processed_cogs.append(cog)
+            print(f"Reloaded cog '{cog.name}'")
 
     async def find_cog(self, path: Path) -> str:
         cog_dir = self.found_cogs.get(path, None)
-        if cog_dir and cog_dir not in self.initialized_cogs:
-            return None
         if not cog_dir:
-            cog_dir = self._find_cog(path)
-            if not cog_dir:
-                return None
+            if path.name == 'pyproject.toml':
+                cog_dir = path.parent
+            else:
+                cog_dir = self._find_cog(path)
+                if not cog_dir:
+                    return None
 
         self.found_cogs[path] = cog_dir
         return cog_dir

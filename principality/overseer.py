@@ -10,9 +10,8 @@ class Overseer():
         self._watched_files = []
         self._old_hashes = {}
         # make sure location is Path type
-        if isinstance(location, Path): self.location = location
-        elif isinstance(location, str): self.location = Path(location)
-        else: raise ArgumentError("location must be a path to a directory")
+        self.location = Path(location)
+        if not self.location.is_dir(): raise ArgumentError("location must be a path to a directory")
 
         if not isinstance(patterns, list): patterns = [patterns]
 
@@ -27,7 +26,7 @@ class Overseer():
         # get every file in directory
         files = []
         for pattern in self._patterns:
-            [files.append(f) for f in self.location.glob(pattern) if f.is_file()]
+            [files.append(f) for f in self.location.rglob(pattern) if f.is_file()]
         for file in files:
             # hash the file and store it temporarily
             hash = sha256()
