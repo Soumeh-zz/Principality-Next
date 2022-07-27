@@ -170,8 +170,10 @@ class Cherub(Configurable):
         }
 
         # get requirements
-        if 'dependencies' in installed_cog.metadata:
-            [self.dependencies.append(i.after('@ ')) for i in installed_cog.metadata['dependencies']]
+        if 'dependencies' in cog.metadata:
+            for dep in cog.metadata['dependencies']:
+                if '@ ' in dep: dep = dep.rsplit('@ ', 1)[1]
+                self.dependencies.append(dep)
 
         self._save()
         return True
@@ -196,8 +198,10 @@ class Cherub(Configurable):
         }
 
         # get requirements
-        if 'dependencies' in installed_cog.metadata:
-            [self.dependencies.append(i.after('@ ')) for i in prepared_cog.metadata['dependencies']]
+        if 'dependencies' in cog.metadata:
+            for dep in cog.metadata['dependencies']:
+                if '@ ' in dep: dep = dep.rsplit('@ ', 1)[1]
+                self.dependencies.append(dep)
 
         self._save()
         return True
