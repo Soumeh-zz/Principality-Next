@@ -20,5 +20,5 @@ packages = [
 ]
 
 [project.scripts]
-principality = "principality:__main__"
-cherub = "cherub:__main__"
+principality = "principality:main"
+cherub = "cherub:main"
