@@ -6,8 +6,9 @@ __pycache__
 .pytest_cache
 build/
 
-dev_cogs/
+requirements.txt
+cog_requirements.txt
+cogs/
 data/
 configs/
-cog_requirements.txt
 cherub/argument_parser.py
