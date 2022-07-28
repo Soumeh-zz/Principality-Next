@@ -64,5 +64,8 @@ def setup_heroku():
         file.write('python-3.10.5')
     print("Created Heroku files")
 
-if __name__ == '__main__':
+def main():
     app()
+
+if __name__ == '__main__':
+    main()

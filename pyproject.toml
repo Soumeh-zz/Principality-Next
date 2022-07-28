@@ -1,6 +1,6 @@
 [project]
 name = "principality-next"
-version = "2.2.2"
+version = "2.2.3"
 description = "Modular Discord Bot Framework"
 
 dependencies = [
@@ -20,5 +20,5 @@ packages = [
 ]
 
 [project.scripts]
-principality = "principality:main"
-cherub = "cherub:main"
+principality = "principality.__main__:main"
+cherub = "cherub.__main__:main"

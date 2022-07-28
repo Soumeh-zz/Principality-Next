@@ -51,6 +51,8 @@ def available():
     available = [a for a in cherub.available_cogs if a not in cherub.cogs]
     print('\n'.join(available) or "None :(")
 
-if __name__ == '__main__':
+def main():
     app()
-    print('e')
+
+if __name__ == '__main__':
+    main()
