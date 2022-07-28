@@ -16,7 +16,7 @@ from typing import List
 from pyfigure import Configurable, Option
 from principality import Principality
 from principality.databases import Local
-from principality.cog import Cog, get_cogs
+from cog import Cog, get_cogs
 from principality.utils import url_to_json
 
 from typing import List

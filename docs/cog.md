@@ -47,10 +47,10 @@ W.I.P.
 
 # example.py
 
-A cog is initiated by making a new class that inherits the `principality.cog.Cog` class.
+A cog is initiated by making a new class that inherits the `cog.Cog` class.
 
 ```py
-from principality.cog import Cog
+from cog import Cog
 
 class Example(Cog):
     pass
@@ -178,7 +178,7 @@ The `ctx` argument is a Nextcord [`Interaction`](https://docs.nextcord.dev/en/st
 
 `example.py`
 ```py
-from principality.cog import  Cog, ConfigOption, SlashOption
+from cog import  Cog, ConfigOption, SlashOption
 
 class Example(Cog):
 

@@ -1,5 +1,5 @@
 from nextcord import Member, Interaction, Embed, SlashApplicationCommand
-from principality.cog import Cog
+from cog import Cog
 
 class Game():
 

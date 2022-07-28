@@ -6,7 +6,7 @@ from typing import Literal
 from pyfigure import Configurable, Option
 from nextcord.ext import tasks
 
-from principality.cog import Cog, get_cogs
+from cog import Cog, get_cogs
 from principality.overseer import Overseer
 
 class Principality(Bot, Configurable):
