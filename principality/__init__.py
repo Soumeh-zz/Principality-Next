@@ -26,8 +26,8 @@ class Principality(Bot, Configurable):
         Bot.__init__(self, rollout_all_guilds=True, intents=Intents.all(), allowed_mentions=AllowedMentions(everyone=False, replied_user=False), *args)
         Configurable.__init__(self)
 
-    def load(self):
-        print('Loaded Cogs:')
+    def load_cogs(self):
+        print('Loading Cogs...')
         cogs = get_cogs(Path(self.config.cog_directory))
         for cog in cogs.values():
             db = None
@@ -36,19 +36,23 @@ class Principality(Bot, Configurable):
             self.add_cog(cog)
             self.load_cog(cog)
             print('> '+cog.name)
+        print('Cogs loaded!\n')
 
     async def on_ready(self):
+        print('Readying Cogs...')
         for cog in self.cogs.values():
             await self.async_load_cog(cog)
+            print('> '+cog.name)
+        print('Cogs ready!')
 
     def add_cog(self, cog: Cog):
         cog.bot = self
         super().add_cog(cog, override=True)
         return True
 
-    def load_cog(self, cog: Cog):
+    def load_cog(self, cog: Cog) -> bool:
         try:
-            if hasattr(cog, 'load'): cog.load()
+            if hasattr(cog, 'load'): cog.load(self)
             return True
         except Exception as error:
             exception_type = type(error).__name__
@@ -56,23 +60,27 @@ class Principality(Bot, Configurable):
             exception_line = error.__traceback__.tb_lineno
             print(f"Error while loading cog '{cog.name}' on line {exception_line}: [{exception_type}] {exception_message}")
 
-    async def async_load_cog(self, cog: Cog):
+    async def async_load_cog(self, cog: Cog) -> bool:
         try:
-            if hasattr(cog, 'ready'): await cog.ready()
+            if hasattr(cog, 'ready'): await cog.ready(self)
             return True
         except Exception as error:
             exception_type = type(error).__name__
             exception_message = error
             exception_line = error.__traceback__.tb_lineno
             print(f"Error while readying cog '{cog.name}' on line {exception_line}: [{exception_type}] {exception_message}")
+            return False
 
-    async def unload_cog(self, cog: Cog):
+    async def unload_cog(self, cog: Cog) -> bool:
+        #old_cog = self.cogs[cog.id]
         self.remove_cog(cog.id)
+        #del old_cog
         return True
     
-    async def reload_cog(self, cog: Cog):
+    async def reload_cog(self, cog: Cog) -> bool:
         await self.unload_cog(cog)
-        # reload module
+        self.add_cog(cog)
+        await self.sync_all_application_commands()
         self.load_cog(cog)
         await self.async_load_cog(cog)
         return True
@@ -134,7 +142,7 @@ class PrincipalityDev(Principality):
             # find cog id and cache it
             cog_dir = await self.find_cog(file)
             if not cog_dir:
-                print(f"Couldn't find what cog file '{file}' belongs to")
+                print(f"Couldn't find what cog '{file}' belongs to")
                 continue
 
             cog = Cog.from_dir(cog_dir)
@@ -143,9 +151,7 @@ class PrincipalityDev(Principality):
                 continue
 
             cog = cog()
-            self.load_cog(cog)
-            await self.async_load_cog(cog)
-            await self.sync_application_commands()
+            await self.reload_cog(cog)
 
             self.processed_cogs.append(cog)
             print(f"Reloaded cog '{cog.name}'")
